@@ -1,3 +1,4 @@
+#Required packages
 import sqlite3
 import time
 import urllib2
@@ -8,7 +9,6 @@ from cookielib import CookieJar
 import datetime
 import sys
 import csv
-
 import requests as rq
 from bs4 import BeautifulSoup as bsoup
 
@@ -19,12 +19,12 @@ for line in sent_file:
 	term, score = line.split("\t")
 	scores[term] = int(score)
 	
-	
+#Initialize settings for web scraping
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 
-
+#Make array of dates
 date_array = ['1991-01','1991-02','1991-03','1991-04','1991-05','1991-06','1991-07','1991-08','1991-09','1991-10','1991-11','1991-12',
 '1992-01','1992-02','1992-03','1992-04','1992-05','1992-06','1992-07','1992-08','1992-09','1992-10','1992-11','1992-12',
 '1993-01','1993-02','1993-03','1993-04','1993-05','1993-06','1993-07','1993-08','1993-09','1993-10','1993-11','1993-12',
@@ -49,14 +49,18 @@ date_array = ['1991-01','1991-02','1991-03','1991-04','1991-05','1991-06','1991-
 '2012-01','2012-02','2012-03','2012-04','2012-05','2012-06','2012-07','2012-08','2012-09','2012-10','2012-11','2012-12',
 '2013-01','2013-02','2013-03','2013-04','2013-05','2013-06','2013-07','2013-08','2013-09','2013-10','2013-11','2013-12']
 
+#Initialize score
 total_scores = {}
+#Loop over all dates
 for current_date in date_array:
-
+	#Link to Business Week archives
 	main_url = "http://www.businessweek.com/archive/"+current_date+"/news.html"
 	r = rq.get(main_url)
-
+	
+	#Use beautiful soup to load content
 	soup = bsoup(r.content)
-
+	
+	#Extract links to the articles
 	g_data = soup.find_all("ul",{"class":"weeks"})
 	links_messy_headlines = str(g_data[0].find_all('a'))
 	links_headlines = re.findall(r'<a href=\"(.*?)\"', links_messy_headlines)
@@ -65,6 +69,7 @@ for current_date in date_array:
 		print ('***************************************************************')
 		print url
 		try:	
+			#Go to each article link to scrape
 			r = rq.get(url)
 			soup_headlines = bsoup(r.content)
 			h_data = soup_headlines.find_all("ul",{"class":"archive"})
